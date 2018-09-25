@@ -54,9 +54,6 @@ def path_to_word(grid, path):
     Add all of the letters on the path to a string
     """
     return ''.join([grid[p] for p in path])
-    
-def word_in_dictionary(word, dict):
-    return word in dict
 
 def search(grid, dictionary):
     """
@@ -65,11 +62,14 @@ def search(grid, dictionary):
     """
     neighbours = all_grid_neighbours(grid)
     paths = []
+    full_words, stems = dictionary #unpack dictionary tuple
     
     def do_search(path):
         word = path_to_word(grid, path)
-        if word_in_dictionary(word, dictionary):
+        if word in full_words:
             paths.append(path)
+        if word not in stems:
+            return
         for next_pos in neighbours[path[-1]]:
             if next_pos not in path:
                 do_search(path + [next_pos])
@@ -86,8 +86,16 @@ def get_dictionary(dictionary_file):
     """
     Load dictionary file
     """
+    full_words, stems = set(), set()
     with open(dictionary_file) as f:
-        return {w.strip().upper() for w in f} #set searches faster
+        for word in f:
+            word = word.strip().upper()
+            full_words.add(word)
+            
+            for i in range(1, len(word)):
+                stems.add(word[:i])
+                
+    return full_words, stems
         
 def display_words(words):
     """
